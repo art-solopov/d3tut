@@ -1,0 +1,386 @@
+<p>Hello again dear readers! <a href="http://puppydev.com/2015-02-14/d3-js-layout-tutorials-prologue">Last time</a> 
+we took a look at D3.js and talked about its basics for a while. 
+Today we’re going to look at the two most basic hierarchy layouts in D3.js: the tree and the cluster.</p>
+
+<p><a href="#cut"> </a></p>
+
+<p>These two layouts are very similar. The only difference between them is that the cluster layout generates a dendrogram,
+which puts all the leaf nodes on the same level. The tree is more concerned about the levels themselves.</p>
+
+<p>So, how do I work with layouts? Basically, it’s just two steps: get the data and feed in into the layout. Then you can
+get different layout-related objects (such as nodes and links) which will provide you the information you need to
+build a nice diagram.</p>
+
+<p>But less talking, more coding, right? Let’s try and build that diagram stuff!</p>
+
+<p>For all the code we’ll use similar HTML:</p>
+
+<div class="highlighter-coderay"><div class="CodeRay">
+  <div class="code"><pre><span class="line-numbers"> <a href="#n1" name="n1">1</a></span><span style="color:#070;font-weight:bold">&lt;html&gt;</span>
+<span class="line-numbers"> <a href="#n2" name="n2">2</a></span>    <span style="color:#070;font-weight:bold">&lt;head&gt;</span>
+<span class="line-numbers"> <a href="#n3" name="n3">3</a></span>        <span style="color:#070;font-weight:bold">&lt;script</span> <span style="color:#b48">src</span>=<span style="background-color:hsla(0,100%,50%,0.05)"><span style="color:#710">&quot;</span><span style="color:#D20">http://d3js.org/d3.v3.min.js</span><span style="color:#710">&quot;</span></span> <span style="color:#b48">charset</span>=<span style="background-color:hsla(0,100%,50%,0.05)"><span style="color:#710">&quot;</span><span style="color:#D20">utf-8</span><span style="color:#710">&quot;</span></span><span style="color:#070;font-weight:bold">&gt;</span><span style="color:#070;font-weight:bold">&lt;/script&gt;</span>
+<span class="line-numbers"> <a href="#n4" name="n4">4</a></span>    <span style="color:#070;font-weight:bold">&lt;/head&gt;</span>
+<span class="line-numbers"> <a href="#n5" name="n5">5</a></span>    <span style="color:#070;font-weight:bold">&lt;body&gt;</span>
+<span class="line-numbers"> <a href="#n6" name="n6">6</a></span>        <span style="color:#070;font-weight:bold">&lt;svg&gt;</span>
+<span class="line-numbers"> <a href="#n7" name="n7">7</a></span>        <span style="color:#070;font-weight:bold">&lt;/svg&gt;</span>
+<span class="line-numbers"> <a href="#n8" name="n8">8</a></span>    <span style="color:#070;font-weight:bold">&lt;/body&gt;</span>
+<span class="line-numbers"> <a href="#n9" name="n9">9</a></span><span style="color:#070;font-weight:bold">&lt;/html&gt;</span>
+</pre></div>
+</div>
+</div>
+
+<p>Just insert another <code>&lt;script&gt;</code> tag with the needed JavaScript right before the closing <code>&lt;/body&gt;</code> tag.</p>
+
+<h2 id="tree">Tree</h2>
+
+<p>We’ll start with the tree layout. Let’s create a file named tree.js:</p>
+
+<div class="highlighter-coderay"><div class="CodeRay">
+  <div class="code"><pre><span class="line-numbers"> <a href="#n1" name="n1">1</a></span><span style="color:#080;font-weight:bold">var</span> width = <span style="color:#00D">1000</span>;
+<span class="line-numbers"> <a href="#n2" name="n2">2</a></span><span style="color:#080;font-weight:bold">var</span> height = <span style="color:#00D">1000</span>;
+<span class="line-numbers"> <a href="#n3" name="n3">3</a></span>
+<span class="line-numbers"> <a href="#n4" name="n4">4</a></span><span style="color:#080;font-weight:bold">var</span> svg = d3.select(<span style="background-color:hsla(0,100%,50%,0.05)"><span style="color:#710">'</span><span style="color:#D20">svg</span><span style="color:#710">'</span></span>)
+<span class="line-numbers"> <a href="#n5" name="n5">5</a></span>            .attr(<span style="background-color:hsla(0,100%,50%,0.05)"><span style="color:#710">'</span><span style="color:#D20">width</span><span style="color:#710">'</span></span>, width).attr(<span style="background-color:hsla(0,100%,50%,0.05)"><span style="color:#710">'</span><span style="color:#D20">height</span><span style="color:#710">'</span></span>, height);
+<span class="line-numbers"> <a href="#n6" name="n6">6</a></span><span style="color:#080;font-weight:bold">var</span> tree = d3.layout.tree().size([width, height]);
+<span class="line-numbers"> <a href="#n7" name="n7">7</a></span>
+<span class="line-numbers"> <a href="#n8" name="n8">8</a></span>d3.json(<span style="background-color:hsla(0,100%,50%,0.05)"><span style="color:#710">'</span><span style="color:#D20">data.json</span><span style="color:#710">'</span></span>, <span style="color:#080;font-weight:bold">function</span>(error, data){
+<span class="line-numbers"> <a href="#n9" name="n9">9</a></span>    <span style="color:#080;font-weight:bold">var</span> nodes = tree.nodes(data);
+<span class="line-numbers"><strong><a href="#n10" name="n10">10</a></strong></span>    <span style="color:#080;font-weight:bold">var</span> links = tree.links(nodes);
+<span class="line-numbers"><a href="#n11" name="n11">11</a></span>    svg.selectAll(<span style="background-color:hsla(0,100%,50%,0.05)"><span style="color:#710">'</span><span style="color:#D20">.link</span><span style="color:#710">'</span></span>).data(links).enter()
+<span class="line-numbers"><a href="#n12" name="n12">12</a></span>       .append(<span style="background-color:hsla(0,100%,50%,0.05)"><span style="color:#710">'</span><span style="color:#D20">line</span><span style="color:#710">'</span></span>).attr(<span style="background-color:hsla(0,100%,50%,0.05)"><span style="color:#710">'</span><span style="color:#D20">class</span><span style="color:#710">'</span></span>, <span style="background-color:hsla(0,100%,50%,0.05)"><span style="color:#710">'</span><span style="color:#D20">link</span><span style="color:#710">'</span></span>)
+<span class="line-numbers"><a href="#n13" name="n13">13</a></span>       .attr(<span style="background-color:hsla(0,100%,50%,0.05)"><span style="color:#710">'</span><span style="color:#D20">x1</span><span style="color:#710">'</span></span>, <span style="color:#080;font-weight:bold">function</span>(d){<span style="color:#080;font-weight:bold">return</span> d.source.x})
+<span class="line-numbers"><a href="#n14" name="n14">14</a></span>       .attr(<span style="background-color:hsla(0,100%,50%,0.05)"><span style="color:#710">'</span><span style="color:#D20">y1</span><span style="color:#710">'</span></span>, <span style="color:#080;font-weight:bold">function</span>(d){<span style="color:#080;font-weight:bold">return</span> d.source.y})
+<span class="line-numbers"><a href="#n15" name="n15">15</a></span>       .attr(<span style="background-color:hsla(0,100%,50%,0.05)"><span style="color:#710">'</span><span style="color:#D20">x2</span><span style="color:#710">'</span></span>, <span style="color:#080;font-weight:bold">function</span>(d){<span style="color:#080;font-weight:bold">return</span> d.target.x})
+<span class="line-numbers"><a href="#n16" name="n16">16</a></span>       .attr(<span style="background-color:hsla(0,100%,50%,0.05)"><span style="color:#710">'</span><span style="color:#D20">y2</span><span style="color:#710">'</span></span>, <span style="color:#080;font-weight:bold">function</span>(d){<span style="color:#080;font-weight:bold">return</span> d.target.y})
+<span class="line-numbers"><a href="#n17" name="n17">17</a></span>       .attr(<span style="background-color:hsla(0,100%,50%,0.05)"><span style="color:#710">'</span><span style="color:#D20">stroke</span><span style="color:#710">'</span></span>, <span style="background-color:hsla(0,100%,50%,0.05)"><span style="color:#710">'</span><span style="color:#D20">blue</span><span style="color:#710">'</span></span>);
+<span class="line-numbers"><a href="#n18" name="n18">18</a></span>    svg.selectAll(<span style="background-color:hsla(0,100%,50%,0.05)"><span style="color:#710">'</span><span style="color:#D20">.node</span><span style="color:#710">'</span></span>).data(nodes).enter()
+<span class="line-numbers"><a href="#n19" name="n19">19</a></span>       .append(<span style="background-color:hsla(0,100%,50%,0.05)"><span style="color:#710">'</span><span style="color:#D20">text</span><span style="color:#710">'</span></span>).attr(<span style="background-color:hsla(0,100%,50%,0.05)"><span style="color:#710">'</span><span style="color:#D20">x</span><span style="color:#710">'</span></span>, <span style="color:#080;font-weight:bold">function</span>(d){<span style="color:#080;font-weight:bold">return</span> d.x})
+<span class="line-numbers"><strong><a href="#n20" name="n20">20</a></strong></span>       .attr(<span style="background-color:hsla(0,100%,50%,0.05)"><span style="color:#710">'</span><span style="color:#D20">y</span><span style="color:#710">'</span></span>, <span style="color:#080;font-weight:bold">function</span>(d){<span style="color:#080;font-weight:bold">return</span> d.y})
+<span class="line-numbers"><a href="#n21" name="n21">21</a></span>       .text(<span style="color:#080;font-weight:bold">function</span>(d){ <span style="color:#080;font-weight:bold">return</span> d.t;});
+<span class="line-numbers"><a href="#n22" name="n22">22</a></span>});
+</pre></div>
+</div>
+</div>
+
+<p>So, what do we do here? We start off with setting up our <code>svg</code> element. We set up its width and height (the values are
+completely orbitrary, by the way. Nothing magical about them. It just looks good on my PC).</p>
+
+<p>The really interesting part starts here:</p>
+
+<div class="highlighter-coderay"><div class="CodeRay">
+  <div class="code"><pre><span class="line-numbers"><a href="#n1" name="n1">1</a></span><span style="color:#080;font-weight:bold">var</span> tree = d3.layout.tree().size([width, height]);
+</pre></div>
+</div>
+</div>
+
+<p>Here, we create our layout, using the <code>d3.layout.tree()</code> function. Immediately we set its size. <strong>An important thing to
+know:</strong> The size of layout is very, very abstract. Here, it just maps straight to our SVG “canvas”, but more often than
+not there will be some sort of transformation. For example:</p>
+
+<ul>
+  <li>You want to have relatively big nodes, so you’ll have to shrink the layout a bit;</li>
+  <li>You want to have a vertical-spanning tree instead of a horizontal-spanning one. Just switch width and height and
+you’ll be fine.</li>
+  <li>You want to have something weird like a <a href="http://bl.ocks.org/mbostock/4063550">radial layout.</a></li>
+</ul>
+
+<p>But, for now, we won’t bother with altering any coordinates and will just move along. After we created a tree, we must
+get our data and build our tree:</p>
+
+<div class="highlighter-coderay"><div class="CodeRay">
+  <div class="code"><pre><span class="line-numbers"><a href="#n1" name="n1">1</a></span>d3.json(<span style="background-color:hsla(0,100%,50%,0.05)"><span style="color:#710">'</span><span style="color:#D20">data.json</span><span style="color:#710">'</span></span>, <span style="color:#080;font-weight:bold">function</span>(error, data){
+<span class="line-numbers"><a href="#n2" name="n2">2</a></span>    <span style="color:#080;font-weight:bold">var</span> nodes = tree.nodes(data);
+<span class="line-numbers"><a href="#n3" name="n3">3</a></span>    <span style="color:#080;font-weight:bold">var</span> links = tree.links(nodes);
+<span class="line-numbers"><a href="#n4" name="n4">4</a></span>&lt;...&gt;
+</pre></div>
+</div>
+</div>
+
+<p>Let’s talk about the data for a moment. As far as these layouts are concerned, the data must be formed in a tree-ish
+fashion, with <code>children</code> being the only required field, containing the children of a particular node. In other words,
+something like this:</p>
+
+<div class="pre-scrollable highlighter-coderay"><div class="CodeRay">
+  <div class="code"><pre><span class="line-numbers"> <a href="#n1" name="n1">1</a></span>{
+<span class="line-numbers"> <a href="#n2" name="n2">2</a></span>  <span style="color:#606"><span style="color:#404">&quot;</span><span>t</span><span style="color:#404">&quot;</span></span>: <span style="background-color:hsla(0,100%,50%,0.05)"><span style="color:#710">&quot;</span><span style="color:#D20">0</span><span style="color:#710">&quot;</span></span>,
+<span class="line-numbers"> <a href="#n3" name="n3">3</a></span>  <span style="color:#606"><span style="color:#404">&quot;</span><span>children</span><span style="color:#404">&quot;</span></span>: [
+<span class="line-numbers"> <a href="#n4" name="n4">4</a></span>    {
+<span class="line-numbers"> <a href="#n5" name="n5">5</a></span>      <span style="color:#606"><span style="color:#404">&quot;</span><span>t</span><span style="color:#404">&quot;</span></span>: <span style="background-color:hsla(0,100%,50%,0.05)"><span style="color:#710">&quot;</span><span style="color:#D20">00</span><span style="color:#710">&quot;</span></span>
+<span class="line-numbers"> <a href="#n6" name="n6">6</a></span>    },
+<span class="line-numbers"> <a href="#n7" name="n7">7</a></span>    {
+<span class="line-numbers"> <a href="#n8" name="n8">8</a></span>      <span style="color:#606"><span style="color:#404">&quot;</span><span>t</span><span style="color:#404">&quot;</span></span>: <span style="background-color:hsla(0,100%,50%,0.05)"><span style="color:#710">&quot;</span><span style="color:#D20">01</span><span style="color:#710">&quot;</span></span>,
+<span class="line-numbers"> <a href="#n9" name="n9">9</a></span>      <span style="color:#606"><span style="color:#404">&quot;</span><span>children</span><span style="color:#404">&quot;</span></span>: [
+<span class="line-numbers"><strong><a href="#n10" name="n10">10</a></strong></span>        {
+<span class="line-numbers"><a href="#n11" name="n11">11</a></span>          <span style="color:#606"><span style="color:#404">&quot;</span><span>t</span><span style="color:#404">&quot;</span></span>: <span style="background-color:hsla(0,100%,50%,0.05)"><span style="color:#710">&quot;</span><span style="color:#D20">010</span><span style="color:#710">&quot;</span></span>
+<span class="line-numbers"><a href="#n12" name="n12">12</a></span>        },
+<span class="line-numbers"><a href="#n13" name="n13">13</a></span>        {
+<span class="line-numbers"><a href="#n14" name="n14">14</a></span>          <span style="color:#606"><span style="color:#404">&quot;</span><span>t</span><span style="color:#404">&quot;</span></span>: <span style="background-color:hsla(0,100%,50%,0.05)"><span style="color:#710">&quot;</span><span style="color:#D20">011</span><span style="color:#710">&quot;</span></span>
+<span class="line-numbers"><a href="#n15" name="n15">15</a></span>        },
+<span class="line-numbers"><a href="#n16" name="n16">16</a></span>        {
+<span class="line-numbers"><a href="#n17" name="n17">17</a></span>          <span style="color:#606"><span style="color:#404">&quot;</span><span>t</span><span style="color:#404">&quot;</span></span>: <span style="background-color:hsla(0,100%,50%,0.05)"><span style="color:#710">&quot;</span><span style="color:#D20">012</span><span style="color:#710">&quot;</span></span>
+<span class="line-numbers"><a href="#n18" name="n18">18</a></span>        },
+<span class="line-numbers"><a href="#n19" name="n19">19</a></span>        {
+<span class="line-numbers"><strong><a href="#n20" name="n20">20</a></strong></span>          <span style="color:#606"><span style="color:#404">&quot;</span><span>t</span><span style="color:#404">&quot;</span></span>: <span style="background-color:hsla(0,100%,50%,0.05)"><span style="color:#710">&quot;</span><span style="color:#D20">013</span><span style="color:#710">&quot;</span></span>
+<span class="line-numbers"><a href="#n21" name="n21">21</a></span>        }
+<span class="line-numbers"><a href="#n22" name="n22">22</a></span>      ]
+<span class="line-numbers"><a href="#n23" name="n23">23</a></span>    },
+<span class="line-numbers"><a href="#n24" name="n24">24</a></span>    {
+<span class="line-numbers"><a href="#n25" name="n25">25</a></span>      <span style="color:#606"><span style="color:#404">&quot;</span><span>t</span><span style="color:#404">&quot;</span></span>: <span style="background-color:hsla(0,100%,50%,0.05)"><span style="color:#710">&quot;</span><span style="color:#D20">02</span><span style="color:#710">&quot;</span></span>,
+<span class="line-numbers"><a href="#n26" name="n26">26</a></span>      <span style="color:#606"><span style="color:#404">&quot;</span><span>children</span><span style="color:#404">&quot;</span></span>: [
+<span class="line-numbers"><a href="#n27" name="n27">27</a></span>        {
+<span class="line-numbers"><a href="#n28" name="n28">28</a></span>          <span style="color:#606"><span style="color:#404">&quot;</span><span>t</span><span style="color:#404">&quot;</span></span>: <span style="background-color:hsla(0,100%,50%,0.05)"><span style="color:#710">&quot;</span><span style="color:#D20">020</span><span style="color:#710">&quot;</span></span>
+<span class="line-numbers"><a href="#n29" name="n29">29</a></span>        },
+<span class="line-numbers"><strong><a href="#n30" name="n30">30</a></strong></span>        {
+<span class="line-numbers"><a href="#n31" name="n31">31</a></span>          <span style="color:#606"><span style="color:#404">&quot;</span><span>t</span><span style="color:#404">&quot;</span></span>: <span style="background-color:hsla(0,100%,50%,0.05)"><span style="color:#710">&quot;</span><span style="color:#D20">021</span><span style="color:#710">&quot;</span></span>
+<span class="line-numbers"><a href="#n32" name="n32">32</a></span>        },
+<span class="line-numbers"><a href="#n33" name="n33">33</a></span>        {
+<span class="line-numbers"><a href="#n34" name="n34">34</a></span>          <span style="color:#606"><span style="color:#404">&quot;</span><span>t</span><span style="color:#404">&quot;</span></span>: <span style="background-color:hsla(0,100%,50%,0.05)"><span style="color:#710">&quot;</span><span style="color:#D20">022</span><span style="color:#710">&quot;</span></span>
+<span class="line-numbers"><a href="#n35" name="n35">35</a></span>        },
+<span class="line-numbers"><a href="#n36" name="n36">36</a></span>        {
+<span class="line-numbers"><a href="#n37" name="n37">37</a></span>          <span style="color:#606"><span style="color:#404">&quot;</span><span>t</span><span style="color:#404">&quot;</span></span>: <span style="background-color:hsla(0,100%,50%,0.05)"><span style="color:#710">&quot;</span><span style="color:#D20">023</span><span style="color:#710">&quot;</span></span>
+<span class="line-numbers"><a href="#n38" name="n38">38</a></span>        },
+<span class="line-numbers"><a href="#n39" name="n39">39</a></span>        {
+<span class="line-numbers"><strong><a href="#n40" name="n40">40</a></strong></span>          <span style="color:#606"><span style="color:#404">&quot;</span><span>t</span><span style="color:#404">&quot;</span></span>: <span style="background-color:hsla(0,100%,50%,0.05)"><span style="color:#710">&quot;</span><span style="color:#D20">024</span><span style="color:#710">&quot;</span></span>
+<span class="line-numbers"><a href="#n41" name="n41">41</a></span>        },
+<span class="line-numbers"><a href="#n42" name="n42">42</a></span>        {
+<span class="line-numbers"><a href="#n43" name="n43">43</a></span>          <span style="color:#606"><span style="color:#404">&quot;</span><span>t</span><span style="color:#404">&quot;</span></span>: <span style="background-color:hsla(0,100%,50%,0.05)"><span style="color:#710">&quot;</span><span style="color:#D20">025</span><span style="color:#710">&quot;</span></span>
+<span class="line-numbers"><a href="#n44" name="n44">44</a></span>        }
+<span class="line-numbers"><a href="#n45" name="n45">45</a></span>      ]
+<span class="line-numbers"><a href="#n46" name="n46">46</a></span>    },
+<span class="line-numbers"><a href="#n47" name="n47">47</a></span>    {
+<span class="line-numbers"><a href="#n48" name="n48">48</a></span>      <span style="color:#606"><span style="color:#404">&quot;</span><span>t</span><span style="color:#404">&quot;</span></span>: <span style="background-color:hsla(0,100%,50%,0.05)"><span style="color:#710">&quot;</span><span style="color:#D20">03</span><span style="color:#710">&quot;</span></span>,
+<span class="line-numbers"><a href="#n49" name="n49">49</a></span>      <span style="color:#606"><span style="color:#404">&quot;</span><span>children</span><span style="color:#404">&quot;</span></span>: [
+<span class="line-numbers"><strong><a href="#n50" name="n50">50</a></strong></span>        {
+<span class="line-numbers"><a href="#n51" name="n51">51</a></span>          <span style="color:#606"><span style="color:#404">&quot;</span><span>t</span><span style="color:#404">&quot;</span></span>: <span style="background-color:hsla(0,100%,50%,0.05)"><span style="color:#710">&quot;</span><span style="color:#D20">030</span><span style="color:#710">&quot;</span></span>
+<span class="line-numbers"><a href="#n52" name="n52">52</a></span>        },
+<span class="line-numbers"><a href="#n53" name="n53">53</a></span>        {
+<span class="line-numbers"><a href="#n54" name="n54">54</a></span>          <span style="color:#606"><span style="color:#404">&quot;</span><span>t</span><span style="color:#404">&quot;</span></span>: <span style="background-color:hsla(0,100%,50%,0.05)"><span style="color:#710">&quot;</span><span style="color:#D20">031</span><span style="color:#710">&quot;</span></span>
+<span class="line-numbers"><a href="#n55" name="n55">55</a></span>        },
+<span class="line-numbers"><a href="#n56" name="n56">56</a></span>        {
+<span class="line-numbers"><a href="#n57" name="n57">57</a></span>          <span style="color:#606"><span style="color:#404">&quot;</span><span>t</span><span style="color:#404">&quot;</span></span>: <span style="background-color:hsla(0,100%,50%,0.05)"><span style="color:#710">&quot;</span><span style="color:#D20">032</span><span style="color:#710">&quot;</span></span>
+<span class="line-numbers"><a href="#n58" name="n58">58</a></span>        },
+<span class="line-numbers"><a href="#n59" name="n59">59</a></span>        {
+<span class="line-numbers"><strong><a href="#n60" name="n60">60</a></strong></span>          <span style="color:#606"><span style="color:#404">&quot;</span><span>t</span><span style="color:#404">&quot;</span></span>: <span style="background-color:hsla(0,100%,50%,0.05)"><span style="color:#710">&quot;</span><span style="color:#D20">033</span><span style="color:#710">&quot;</span></span>
+<span class="line-numbers"><a href="#n61" name="n61">61</a></span>        },
+<span class="line-numbers"><a href="#n62" name="n62">62</a></span>        {
+<span class="line-numbers"><a href="#n63" name="n63">63</a></span>          <span style="color:#606"><span style="color:#404">&quot;</span><span>t</span><span style="color:#404">&quot;</span></span>: <span style="background-color:hsla(0,100%,50%,0.05)"><span style="color:#710">&quot;</span><span style="color:#D20">034</span><span style="color:#710">&quot;</span></span>
+<span class="line-numbers"><a href="#n64" name="n64">64</a></span>        }
+<span class="line-numbers"><a href="#n65" name="n65">65</a></span>      ]
+<span class="line-numbers"><a href="#n66" name="n66">66</a></span>    },
+<span class="line-numbers"><a href="#n67" name="n67">67</a></span>    {
+<span class="line-numbers"><a href="#n68" name="n68">68</a></span>      <span style="color:#606"><span style="color:#404">&quot;</span><span>t</span><span style="color:#404">&quot;</span></span>: <span style="background-color:hsla(0,100%,50%,0.05)"><span style="color:#710">&quot;</span><span style="color:#D20">04</span><span style="color:#710">&quot;</span></span>
+<span class="line-numbers"><a href="#n69" name="n69">69</a></span>    }
+<span class="line-numbers"><strong><a href="#n70" name="n70">70</a></strong></span>  ]
+<span class="line-numbers"><a href="#n71" name="n71">71</a></span>}
+</pre></div>
+</div>
+</div>
+
+<p>The <code>t</code> attribute is not touched by the layout generation in any way and passed verbatim to the generated nodes.</p>
+
+<p>A node is, basically, something that has its coordinates - in the space of the layout (which, as you should remember,
+is much more of an abstract concept than a set of canvas coordinates). A link is something that has a source node and
+a target node, and that’s it.</p>
+
+<p>So we use the data binding mechanism to bind our links and nodes to SVG lines
+and text elements:</p>
+
+<div class="highlighter-coderay"><div class="CodeRay">
+  <div class="code"><pre><span class="line-numbers"> <a href="#n1" name="n1">1</a></span>svg.selectAll(<span style="background-color:hsla(0,100%,50%,0.05)"><span style="color:#710">'</span><span style="color:#D20">.link</span><span style="color:#710">'</span></span>).data(links).enter()
+<span class="line-numbers"> <a href="#n2" name="n2">2</a></span>   .append(<span style="background-color:hsla(0,100%,50%,0.05)"><span style="color:#710">'</span><span style="color:#D20">line</span><span style="color:#710">'</span></span>).attr(<span style="background-color:hsla(0,100%,50%,0.05)"><span style="color:#710">'</span><span style="color:#D20">class</span><span style="color:#710">'</span></span>, <span style="background-color:hsla(0,100%,50%,0.05)"><span style="color:#710">'</span><span style="color:#D20">link</span><span style="color:#710">'</span></span>)
+<span class="line-numbers"> <a href="#n3" name="n3">3</a></span>   .attr(<span style="background-color:hsla(0,100%,50%,0.05)"><span style="color:#710">'</span><span style="color:#D20">x1</span><span style="color:#710">'</span></span>, <span style="color:#080;font-weight:bold">function</span>(d){<span style="color:#080;font-weight:bold">return</span> d.source.x})
+<span class="line-numbers"> <a href="#n4" name="n4">4</a></span>   .attr(<span style="background-color:hsla(0,100%,50%,0.05)"><span style="color:#710">'</span><span style="color:#D20">y1</span><span style="color:#710">'</span></span>, <span style="color:#080;font-weight:bold">function</span>(d){<span style="color:#080;font-weight:bold">return</span> d.source.y})
+<span class="line-numbers"> <a href="#n5" name="n5">5</a></span>   .attr(<span style="background-color:hsla(0,100%,50%,0.05)"><span style="color:#710">'</span><span style="color:#D20">x2</span><span style="color:#710">'</span></span>, <span style="color:#080;font-weight:bold">function</span>(d){<span style="color:#080;font-weight:bold">return</span> d.target.x})
+<span class="line-numbers"> <a href="#n6" name="n6">6</a></span>   .attr(<span style="background-color:hsla(0,100%,50%,0.05)"><span style="color:#710">'</span><span style="color:#D20">y2</span><span style="color:#710">'</span></span>, <span style="color:#080;font-weight:bold">function</span>(d){<span style="color:#080;font-weight:bold">return</span> d.target.y})
+<span class="line-numbers"> <a href="#n7" name="n7">7</a></span>   .attr(<span style="background-color:hsla(0,100%,50%,0.05)"><span style="color:#710">'</span><span style="color:#D20">stroke</span><span style="color:#710">'</span></span>, <span style="background-color:hsla(0,100%,50%,0.05)"><span style="color:#710">'</span><span style="color:#D20">blue</span><span style="color:#710">'</span></span>);
+<span class="line-numbers"> <a href="#n8" name="n8">8</a></span>svg.selectAll(<span style="background-color:hsla(0,100%,50%,0.05)"><span style="color:#710">'</span><span style="color:#D20">.node</span><span style="color:#710">'</span></span>).data(nodes).enter()
+<span class="line-numbers"> <a href="#n9" name="n9">9</a></span>   .append(<span style="background-color:hsla(0,100%,50%,0.05)"><span style="color:#710">'</span><span style="color:#D20">text</span><span style="color:#710">'</span></span>).attr(<span style="background-color:hsla(0,100%,50%,0.05)"><span style="color:#710">'</span><span style="color:#D20">x</span><span style="color:#710">'</span></span>, <span style="color:#080;font-weight:bold">function</span>(d){<span style="color:#080;font-weight:bold">return</span> d.x})
+<span class="line-numbers"><strong><a href="#n10" name="n10">10</a></strong></span>   .attr(<span style="background-color:hsla(0,100%,50%,0.05)"><span style="color:#710">'</span><span style="color:#D20">y</span><span style="color:#710">'</span></span>, <span style="color:#080;font-weight:bold">function</span>(d){<span style="color:#080;font-weight:bold">return</span> d.y})
+<span class="line-numbers"><a href="#n11" name="n11">11</a></span>   .text(<span style="color:#080;font-weight:bold">function</span>(d){ <span style="color:#080;font-weight:bold">return</span> d.t;});
+</pre></div>
+</div>
+</div>
+
+<p>And here’s what we get:</p>
+
+<svg width="1000" height="1000">
+    <line class="link" x1="486.11111111111114" y1="0" x2="83.33333333333334" y2="500" stroke="blue" />
+    <line class="link" x1="486.11111111111114" y1="0" x2="138.88888888888889" y2="500" stroke="blue" />
+    <line class="link" x1="486.11111111111114" y1="0" x2="472.22222222222223" y2="500" stroke="blue" />
+    <line class="link" x1="486.11111111111114" y1="0" x2="833.3333333333334" y2="500" stroke="blue" />
+    <line class="link" x1="486.11111111111114" y1="0" x2="888.8888888888889" y2="500" stroke="blue" />
+    <line class="link" x1="138.88888888888889" y1="500" x2="55.55555555555556" y2="1000" stroke="blue" />
+    <line class="link" x1="138.88888888888889" y1="500" x2="111.11111111111111" y2="1000" stroke="blue" />
+    <line class="link" x1="138.88888888888889" y1="500" x2="166.66666666666669" y2="1000" stroke="blue" />
+    <line class="link" x1="138.88888888888889" y1="500" x2="222.22222222222223" y2="1000" stroke="blue" />
+    <line class="link" x1="472.22222222222223" y1="500" x2="333.33333333333337" y2="1000" stroke="blue" />
+    <line class="link" x1="472.22222222222223" y1="500" x2="388.8888888888889" y2="1000" stroke="blue" />
+    <line class="link" x1="472.22222222222223" y1="500" x2="444.44444444444446" y2="1000" stroke="blue" />
+    <line class="link" x1="472.22222222222223" y1="500" x2="500" y2="1000" stroke="blue" />
+    <line class="link" x1="472.22222222222223" y1="500" x2="555.5555555555555" y2="1000" stroke="blue" />
+    <line class="link" x1="472.22222222222223" y1="500" x2="611.1111111111111" y2="1000" stroke="blue" />
+    <line class="link" x1="833.3333333333334" y1="500" x2="722.2222222222223" y2="1000" stroke="blue" />
+    <line class="link" x1="833.3333333333334" y1="500" x2="777.7777777777778" y2="1000" stroke="blue" />
+    <line class="link" x1="833.3333333333334" y1="500" x2="833.3333333333334" y2="1000" stroke="blue" />
+    <line class="link" x1="833.3333333333334" y1="500" x2="888.8888888888889" y2="1000" stroke="blue" />
+    <line class="link" x1="833.3333333333334" y1="500" x2="944.4444444444445" y2="1000" stroke="blue" />
+    <text x="486.11111111111114" y="0">
+        0
+    </text>
+    <text x="83.33333333333334" y="500">
+        00
+    </text>
+    <text x="138.88888888888889" y="500">
+        01
+    </text>
+    <text x="55.55555555555556" y="1000">
+        010
+    </text>
+    <text x="111.11111111111111" y="1000">
+        011
+    </text>
+    <text x="166.66666666666669" y="1000">
+        012
+    </text>
+    <text x="222.22222222222223" y="1000">
+        013
+    </text>
+    <text x="472.22222222222223" y="500">
+        02
+    </text>
+    <text x="333.33333333333337" y="1000">
+        020
+    </text>
+    <text x="388.8888888888889" y="1000">
+        021
+    </text>
+    <text x="444.44444444444446" y="1000">
+        022
+    </text>
+    <text x="500" y="1000">
+        023
+    </text>
+    <text x="555.5555555555555" y="1000">
+        024
+    </text>
+    <text x="611.1111111111111" y="1000">
+        025
+    </text>
+    <text x="833.3333333333334" y="500">
+        03
+    </text>
+    <text x="722.2222222222223" y="1000">
+        030
+    </text>
+    <text x="777.7777777777778" y="1000">
+        031
+    </text>
+    <text x="833.3333333333334" y="1000">
+        032
+    </text>
+    <text x="888.8888888888889" y="1000">
+        033
+    </text>
+    <text x="944.4444444444445" y="1000">
+        034
+    </text>
+    <text x="888.8888888888889" y="500">
+        04
+    </text>
+</svg>
+
+<p>Looks kinda… Ugly, doesn’t it? Well, we’ll talk about beautifying it in a
+moment. Right now, though, let’s talk about clusters.</p>
+
+<h2 id="cluster">Cluster</h2>
+
+<p>Working with a cluster layout is very, very similar to working with a tree
+layout. Just replace <code>d3.layout.tree()</code> with <code>d3.layout.cluster()</code> and… Poof!</p>
+
+<svg width="1000" height="1000">
+    <line class="link" x1="490.4761904761905" y1="0" x2="23.809523809523807" y2="1000" stroke="blue" />
+    <line class="link" x1="490.4761904761905" y1="0" x2="190.47619047619045" y2="500" stroke="blue" />
+    <line class="link" x1="490.4761904761905" y1="0" x2="476.19047619047615" y2="500" stroke="blue" />
+    <line class="link" x1="490.4761904761905" y1="0" x2="785.7142857142857" y2="500" stroke="blue" />
+    <line class="link" x1="490.4761904761905" y1="0" x2="976.1904761904761" y2="1000" stroke="blue" />
+    <line class="link" x1="190.47619047619045" y1="500" x2="119.04761904761904" y2="1000" stroke="blue" />
+    <line class="link" x1="190.47619047619045" y1="500" x2="166.66666666666666" y2="1000" stroke="blue" />
+    <line class="link" x1="190.47619047619045" y1="500" x2="214.28571428571428" y2="1000" stroke="blue" />
+    <line class="link" x1="190.47619047619045" y1="500" x2="261.9047619047619" y2="1000" stroke="blue" />
+    <line class="link" x1="476.19047619047615" y1="500" x2="357.14285714285717" y2="1000" stroke="blue" />
+    <line class="link" x1="476.19047619047615" y1="500" x2="404.76190476190476" y2="1000" stroke="blue" />
+    <line class="link" x1="476.19047619047615" y1="500" x2="452.3809523809524" y2="1000" stroke="blue" />
+    <line class="link" x1="476.19047619047615" y1="500" x2="500" y2="1000" stroke="blue" />
+    <line class="link" x1="476.19047619047615" y1="500" x2="547.6190476190477" y2="1000" stroke="blue" />
+    <line class="link" x1="476.19047619047615" y1="500" x2="595.2380952380952" y2="1000" stroke="blue" />
+    <line class="link" x1="785.7142857142857" y1="500" x2="690.4761904761905" y2="1000" stroke="blue" />
+    <line class="link" x1="785.7142857142857" y1="500" x2="738.0952380952382" y2="1000" stroke="blue" />
+    <line class="link" x1="785.7142857142857" y1="500" x2="785.7142857142857" y2="1000" stroke="blue" />
+    <line class="link" x1="785.7142857142857" y1="500" x2="833.3333333333334" y2="1000" stroke="blue" />
+    <line class="link" x1="785.7142857142857" y1="500" x2="880.952380952381" y2="1000" stroke="blue" />
+    <text x="490.4761904761905" y="0">
+        0
+    </text>
+    <text x="23.809523809523807" y="1000">
+        00
+    </text>
+    <text x="190.47619047619045" y="500">
+        01
+    </text>
+    <text x="119.04761904761904" y="1000">
+        010
+    </text>
+    <text x="166.66666666666666" y="1000">
+        011
+    </text>
+    <text x="214.28571428571428" y="1000">
+        012
+    </text>
+    <text x="261.9047619047619" y="1000">
+        013
+    </text>
+    <text x="476.19047619047615" y="500">
+        02
+    </text>
+    <text x="357.14285714285717" y="1000">
+        020
+    </text>
+    <text x="404.76190476190476" y="1000">
+        021
+    </text>
+    <text x="452.3809523809524" y="1000">
+        022
+    </text>
+    <text x="500" y="1000">
+        023
+    </text>
+    <text x="547.6190476190477" y="1000">
+        024
+    </text>
+    <text x="595.2380952380952" y="1000">
+        025
+    </text>
+    <text x="785.7142857142857" y="500">
+        03
+    </text>
+    <text x="690.4761904761905" y="1000">
+        030
+    </text>
+    <text x="738.0952380952382" y="1000">
+        031
+    </text>
+    <text x="785.7142857142857" y="1000">
+        032
+    </text>
+    <text x="833.3333333333334" y="1000">
+        033
+    </text>
+    <text x="880.952380952381" y="1000">
+        034
+    </text>
+    <text x="976.1904761904761" y="1000">
+        04
+    </text>
+</svg>
+
+<p>Not extremely different, but has its quirks.</p>
