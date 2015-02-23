@@ -1,0 +1,17 @@
+<html>
+    <head>
+        <script src="http://d3js.org/d3.v3.min.js" charset="utf-8"></script>
+    </head>
+    <body>
+        <svg>
+        </svg>
+
+        <script type="text/javascript">
+var data = [10, 20, 30, 40, 50]; // (1)
+var svg = d3.select('svg').attr('width', 100 * data.length).attr('height', 100);
+var circles = svg.selectAll('circle').data(data, function(d){ return d; }); // (2)
+circles.enter().append('circle').attr('r', function(d){ return d; }).attr('cy', 50).attr('cx', function(d, i){ return 100 * i + 50;}); // (3,4)
+        </script>
+
+    </body>
+</html>
