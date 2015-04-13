@@ -2,26 +2,27 @@
   "t": "0",
   "children": [
     {
-      "t": "00"
+      "t": "00",
+      "value": 2
     },
     {
       "t": "01",
       "children": [
         {
           "t": "010",
-          "value": 10
+          "value": 1
         },
         {
           "t": "011",
-          "value": 10
+          "value": 1
         },
         {
           "t": "012",
-          "value": 15
+          "value": 1
         },
         {
           "t": "013",
-          "value": 17
+          "value": 1
         }
       ]
     },
@@ -30,27 +31,27 @@
       "children": [
         {
           "t": "020",
-          "value": 12
+          "value": 2
         },
         {
           "t": "021",
-          "value": 20
+          "value": 1
         },
         {
           "t": "022",
-          "value": 35
+          "value": 1
         },
         {
           "t": "023",
-          "value": 20
+          "value": 1
         },
         {
           "t": "024",
-          "value": 10
+          "value": 1
         },
         {
           "t": "025",
-          "value": 5
+          "value": 2
         }
       ]
     },
@@ -59,29 +60,25 @@
       "children": [
         {
           "t": "030",
-          "value": 5
+          "value": 2
         },
         {
           "t": "031",
-          "value": 10
+          "value": 2
         },
         {
           "t": "032",
-          "value": 12
+          "value": 2
         },
         {
           "t": "033",
-          "value": 5
-        },
-        {
-          "t": "034",
-          "value": 10
+          "value": 2
         }
       ]
     },
     {
       "t": "04",
-      "value": 40
+      "value": 5
     }
   ]
 }

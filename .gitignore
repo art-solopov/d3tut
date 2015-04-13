@@ -1,1 +1,6 @@
 .*.sw*
+
+*.jpeg
+*.jpg
+*.png
+*.svg
