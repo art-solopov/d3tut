@@ -7,7 +7,7 @@ function histogram(){
         .data(histogram)
         .enter().append('div').classed('bin', true)
         .style('position', 'absolute')
-        .style('left', function(d){ return d.x * 50; })
+        .style('left', function(d){ return 10 + d.x * 50; })
         .style('width', function(d){ return d.dx * 50; })
         .style('top', function(d) { return 800 - d.y * 5; })
         .style('height', function(d){ return d.y * 5 })
